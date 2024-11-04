@@ -1,12 +1,18 @@
+// ./app.js
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-// const session = require('express-session');  // Testing sessions
+const session = require('express-session');  // Testing sessions
+
+// Import of Building models
+const Building = require('./models/Building');
+
 
 const app = express();
 
-// Устанавливаем EJS как шаблонизатор
+// EJS as a Template
 app.set('view engine', 'ejs');
 
 // Middleware
@@ -15,11 +21,11 @@ app.use(express.urlencoded({ extended: true })); // For work with form's data
 app.use(morgan('dev'));
 
 // For sessions!
-// app.use(session({
-//     secret: 'your-secret-key',
-//     resave: false,
-//     saveUninitialized: true
-//   }));
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true
+  }));
 
 // Connection to MongoDB
 const mongoURI = process.env.ATLAS_URI;
