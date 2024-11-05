@@ -15,7 +15,14 @@
   </ul>
 
   <h2>Buildings:</h2>
-  <button onclick="location.href='/build/enclosure'">Build Enclosure</button>
-  <button onclick="location.href='/build/plantation'">Build Plantation</button>
+  <form action="/build" method="POST">
+    <label for="buildingType">Choose a building:</label>
+    <select name="buildingType">
+      <% availableBuildings.forEach(building => { %>
+        <option value="<%= building.type %>"><%= building.type %></option>
+      <% }) %>
+    </select>
+    <button type="submit">Build</button>
+  </form>
 </body>
 </html>

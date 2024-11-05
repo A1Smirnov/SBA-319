@@ -1,3 +1,5 @@
+// ./models/Building.js
+
 const mongoose = require('mongoose');
 
 const buildingSchema = new mongoose.Schema({

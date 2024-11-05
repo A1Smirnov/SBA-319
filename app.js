@@ -9,6 +9,8 @@ const session = require('express-session');  // Testing sessions
 // Import of Building models
 const Building = require('./models/Building');
 
+// Import building routes
+const buildingRoutes = require('./routes/buildingRoutes');
 
 const app = express();
 
@@ -19,6 +21,9 @@ app.set('view engine', 'ejs');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For work with form's data
 app.use(morgan('dev'));
+
+// Import building routes
+app.use('/build', buildingRoutes);
 
 // For sessions!
 app.use(session({
