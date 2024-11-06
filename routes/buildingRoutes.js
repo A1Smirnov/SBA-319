@@ -19,33 +19,52 @@ router.get('/available', async (req, res) => {
 // Route to build a new building
 router.post('/', async (req, res) => {
     try {
+        const playerId = req.session.playerId;
+    
+        // Check if playerId exists in session
+        if (!playerId) {
+          return res.status(400).send('Player session not found. Please start the game first.');
+        }
+    
+        // Find the player by ID
+        const player = await Player.findById(playerId);
+        if (!player) {
+          return res.status(404).send('Player not found.');
+        }
+    
+        // Retrieve the building type from the request body
         const { buildingType } = req.body;
-      const playerId = req.session.playerId;
-
-      if (!playerId) {
-        return res.status(400).send('Player not logged in.');
-      }
-
-      // Find the player and update their data
-      const player = await Player.findById(playerId);
-      if (!player) {
-        return res.status(404).send('Player not found.');
-      }
-
-      // Add building and update player resources
-      const building = await Building.findOne({ type: buildingType });
-      if (building) {
-        player.buildings.push(building._id);
-        player.resources.money -= building.constructionCost.money;
-        player.resources.energy -= building.constructionCost.energy;
+    
+        // Find the building type from the database
+        const buildingData = await Building.findOne({ type: buildingType });
+        if (!buildingData) {
+          return res.status(400).send('Invalid building type.');
+        }
+    
+        // Check if player has enough resources
+        if (player.resources.money < buildingData.constructionCost.money ||
+            player.resources.energy < buildingData.constructionCost.energy) {
+          return res.status(400).send('Insufficient resources to build this structure.');
+        }
+    
+        // Deduct resources from the player
+        player.resources.money -= buildingData.constructionCost.money;
+        player.resources.energy -= buildingData.constructionCost.energy;
+    
+        // Add the new building to the player's buildings array
+        player.buildings.push({
+          type: buildingData.type,
+          resources: buildingData.resources
+        });
+    
+        // Save the player with updated resources and buildings
         await player.save();
+    
+        res.status(200).send('Building constructed successfully.');
+      } catch (error) {
+        console.error('Error while building:', error);
+        res.status(500).send('An error occurred while constructing the building.');
       }
-
-      res.redirect('/game');
-    } catch (error) {
-      console.error('Error while building:', error);
-      res.status(500).send('An error occurred while building.');
-    }
-});
+    });
 
 module.exports = router;

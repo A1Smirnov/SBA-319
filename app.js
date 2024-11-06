@@ -16,10 +16,20 @@ const buildingRoutes = require('./routes/buildingRoutes');
 
 const app = express();
 
+// Routes
+const indexRoutes = require('./routes/index');
+const gameRoutes = require('./routes/game');
+
 // EJS as a Template
 app.set('view engine', 'ejs');
 
 // Middleware
+// For sessions!
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For work with form's data
 app.use(morgan('dev'));
@@ -27,13 +37,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Import building routes
 app.use('/build', buildingRoutes);
-
-// For sessions!
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true
-  }));
+app.use('/', indexRoutes);
+app.use('/game', gameRoutes);
 
 // Connection to MongoDB
 const mongoURI = process.env.ATLAS_URI;
@@ -41,13 +46,6 @@ const mongoURI = process.env.ATLAS_URI;
 mongoose.connect(mongoURI)
 .then(() => console.log('Connected to MongoDB'))
 .catch((err) => console.error('Failed to connect to MongoDB:', err));
-
-// Routes
-const indexRoutes = require('./routes/index');
-const gameRoutes = require('./routes/game');
-
-app.use('/', indexRoutes);
-app.use('/game', gameRoutes);
 
 // Run server
 const PORT = process.env.PORT || 3000;

@@ -1,7 +1,8 @@
 // ./routes/game.js
 
 const express = require('express');
-const Player = require('../models/Player'); // Import the Player model
+const Player = require('../models/Player');
+const Building = require('../models/Building'); 
 const router = express.Router();
 
 // Route to start a new game
@@ -28,13 +29,20 @@ router.post('/start', async (req, res) => {
 // Route for game management
 router.get('/', async (req, res) => {
   try {
+    if (!req.session.playerId) {
+      return res.redirect('/');
+    }
+
     const player = await Player.findById(req.session.playerId).populate('buildings');
 
     if (!player) {
       return res.redirect('/');
     }
 
-    res.render('game', { player });
+    // Fetch available buildings from MongoDB
+    const availableBuildings = await Building.find({});
+
+    res.render('game', { player, availableBuildings });
   } catch (error) {
     console.error('Error loading game:', error);
     res.status(500).send('An error occurred while loading the game.');
