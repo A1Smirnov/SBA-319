@@ -69,6 +69,38 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Route to remove a building for a player
+router.delete('/:buildingId', async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+    const { playerId } = req.body;
+
+    // Find the building to remove
+    const building = await Building.findById(buildingId);
+    if (!building) {
+      return res.status(404).send('Building not found');
+    }
+
+    // Ensure the building belongs to the player
+    if (building.owner.toString() !== playerId) {
+      return res.status(403).send('This building does not belong to the player');
+    }
+
+    // Remove the building from the player's list
+    await Player.findByIdAndUpdate(playerId, {
+      $pull: { buildings: buildingId }
+    });
+
+    // Delete the building from the buildings collection
+    await Building.findByIdAndDelete(buildingId);
+
+    res.status(200).send('Building removed successfully');
+  } catch (error) {
+    console.error('Error removing building:', error);
+    res.status(500).send('An error occurred while removing the building');
+  }
+});
+
 module.exports = router;
 
 

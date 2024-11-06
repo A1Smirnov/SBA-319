@@ -20,7 +20,9 @@
       <li>
         <strong><%= building.type %></strong><br>
         Resources: <%= building.resources.energy %> Energy, <%= building.resources.money %> Money<br>
-        Construction Cost: <%= building.constructionCost.energy %> Energy, <%= building.constructionCost.money %> Money
+        Construction Cost: <%= building.constructionCost.energy %> Energy, <%= building.constructionCost.money %> Money<br>
+        <!-- Remove button -->
+        <button class="remove-building" data-building-id="<%= building._id %>">Remove</button>
       </li>
     <% }) %>
   </ul>
@@ -41,23 +43,23 @@
   <script>
     const form = document.getElementById('buildForm');
 
-    // Catching form
+    // Catching form submission
     form.addEventListener('submit', async (event) => {
-      event.preventDefault(); // PREVENT DEFAULT
+      event.preventDefault();
 
       const buildingType = document.getElementById('buildingType').value;
-      const playerId = "<%= player._id %>";  // Добавляем playerId из ejs
+      const playerId = "<%= player._id %>";  // Add playerId from ejs
 
       try {
-        // POST-request with JSON-data
+        // POST-request to create building
         const response = await axios.post('/build', {
           buildingType: buildingType,
-          playerId: playerId  // Добавляем playerId
+          playerId: playerId
         });
 
         if (response.status === 200) {
           alert('Building successfully created!');
-          // Refresh page
+          // Refresh the page
           location.reload();
         } else {
           alert('Failed to build.');
@@ -66,6 +68,32 @@
         console.error('Error creating building:', error);
         alert('An error occurred while creating the building.');
       }
+    });
+
+    // Handle remove building button click
+    document.querySelectorAll('.remove-building').forEach(button => {
+      button.addEventListener('click', async (event) => {
+        const buildingId = event.target.getAttribute('data-building-id');
+        const playerId = "<%= player._id %>";
+
+        try {
+          // DELETE-request to remove building
+          const response = await axios.delete(`/building/${buildingId}`, {
+            data: { playerId: playerId }
+          });
+
+          if (response.status === 200) {
+            alert('Building successfully removed!');
+            // Refresh the page
+            location.reload();
+          } else {
+            alert('Failed to remove building.');
+          }
+        } catch (error) {
+          console.error('Error removing building:', error);
+          alert('An error occurred while removing the building.');
+        }
+      });
     });
   </script>
 </body>
