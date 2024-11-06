@@ -1,14 +1,14 @@
-// ./models/Gamestate.js
+// ./models/GameState.js
 
 const mongoose = require('mongoose');
 
-const gameStateSchema = new mongoose.Schema({
+const gamestateSchema = new mongoose.Schema({
   type: String,
   resources: Object,
   constructionCost: Object,
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' } // Ссылка на игрока
 }, { timestamps: true });
 
-const GameState = mongoose.model('GameState', gameStateSchema);
+const Gamestate = mongoose.model('Gamestate', gamestateSchema);  // Обратите внимание на имя модели
 
-module.exports = GameState;
+module.exports = Gamestate;

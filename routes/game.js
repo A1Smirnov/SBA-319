@@ -40,9 +40,9 @@ router.get('/', async (req, res) => {
     }
 
     // Fetch available buildings from MongoDB
-    const availableBuildings = await Building.find({});
+    const availableBuildings = await Building.find({ owner: null });
 
-    res.render('game', { player, availableBuildings });
+    res.render('game', { player, availableBuildings });  // передаем игрока, его здания и доступные для строительства
   } catch (error) {
     console.error('Error loading game:', error);
     res.status(500).send('An error occurred while loading the game.');

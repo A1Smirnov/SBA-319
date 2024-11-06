@@ -2,9 +2,21 @@
 
 const express = require('express');
 const router = express.Router();
-const Building = require('../models/Building');  // Шаблон зданий
+const Building = require('../models/Building');  // Модель для шаблонов зданий
 const Player = require('../models/Player');
-const GameState = require('../models/Gamestate'); // Модель для gamestate
+
+// Route to get available buildings (where owner is null)
+router.get('/available-buildings', async (req, res) => {
+  try {
+    // Получаем здания, у которых owner равен null
+    const availableBuildings = await Building.find({ owner: null });
+
+    res.status(200).json(availableBuildings);  // Отправляем список доступных зданий
+  } catch (error) {
+    console.error('Error fetching available buildings:', error);
+    res.status(500).send('Internal server error');
+  }
+});
 
 // Route to create a building for a player
 router.post('/', async (req, res) => {
@@ -18,40 +30,38 @@ router.post('/', async (req, res) => {
     }
 
     // Find the building template
-    const buildingTemplate = await Building.findOne({ type: buildingType, owner: null });
+    const buildingTemplate = await Building.findOne({ type: buildingType });
 
     if (!buildingTemplate) {
-      return res.status(404).send('Building type not found or already owned');
+      return res.status(404).send('Building type not found');
     }
 
-    // Create a new building instance for the player in gamestate
-    const newBuilding = new GameState({
+    // Create a new building instance for the player
+    const newBuilding = new Building({
       type: buildingTemplate.type,
       resources: buildingTemplate.resources,
       constructionCost: buildingTemplate.constructionCost,
       owner: playerId
     });
 
-    // Save the new building in gamestate
+    // Save the new building instance to the Building collection
     const savedBuilding = await newBuilding.save();
 
-    // Find the player and add the building to the player's gamestate
-    const player = await Player.findById(playerId);
+    // Add the building to the player's buildings
+    const player = await Player.findByIdAndUpdate(
+      playerId,
+      { $push: { buildings: savedBuilding._id } },
+      { new: true }
+    );
 
     if (!player) {
       return res.status(404).send('Player not found');
     }
 
-    // Add the new building to the player's gamestate reference
-    player.buildings.push(savedBuilding._id);
-
-    // Save the updated player object with the new building
-    const updatedPlayer = await player.save();
-
     res.status(200).send({
       message: 'Building created and added to player',
       building: savedBuilding,
-      player: updatedPlayer
+      player
     });
   } catch (error) {
     console.error('Error while building:', error);
@@ -60,3 +70,5 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
+
+

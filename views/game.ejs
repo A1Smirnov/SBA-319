@@ -13,7 +13,19 @@
     <li>Energy: <%= player.resources.energy %></li>
   </ul>
 
-  <h2>Buildings:</h2>
+  <h2>Your Buildings:</h2>
+  <!-- Display the player's buildings -->
+  <ul>
+    <% player.buildings.forEach(building => { %>
+      <li>
+        <strong><%= building.type %></strong><br>
+        Resources: <%= building.resources.energy %> Energy, <%= building.resources.money %> Money<br>
+        Construction Cost: <%= building.constructionCost.energy %> Energy, <%= building.constructionCost.money %> Money
+      </li>
+    <% }) %>
+  </ul>
+
+  <h2>Available Buildings:</h2>
   <form id="buildForm">
     <label for="buildingType">Choose a building:</label>
     <select id="buildingType" name="buildingType">
