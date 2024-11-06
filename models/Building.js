@@ -1,18 +1,18 @@
-// ./models/Building.js
-
+// models/Building.js
 const mongoose = require('mongoose');
 
 const buildingSchema = new mongoose.Schema({
   type: { type: String, required: true },
   resources: {
-    energy: { type: Number, default: 0 },
-    money: { type: Number, default: 0 }, 
+    energy: { type: Number, required: true },
+    money: { type: Number, required: true }
   },
   constructionCost: {
-    money: { type: Number, required: true },
     energy: { type: Number, required: true },
+    money: { type: Number, required: true }
   },
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player', default: null } // Задано значение по умолчанию null
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
+  upgradedTo: { type: String, default: null },
 });
 
 module.exports = mongoose.model('Building', buildingSchema);

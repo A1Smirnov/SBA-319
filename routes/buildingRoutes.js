@@ -69,6 +69,47 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.patch('/upgrade/:id', async (req, res) => {
+  const { id } = req.params;
+  const { newType } = req.body;  // Тип нового здания
+
+  try {
+    // Найдем здание по ID
+    const building = await Building.findById(id);
+
+    if (!building) {
+      return res.status(404).send('Building not found');
+    }
+
+    // Проверяем, было ли уже обновлено здание
+    if (building.upgradedTo) {
+      return res.status(400).send('Building has already been upgraded');
+    }
+
+    // Поищем новое здание по типу, если оно существует
+    const newBuildingTemplate = await Building.findOne({ type: newType });
+
+    if (!newBuildingTemplate) {
+      return res.status(404).send('New building type not found');
+    }
+
+    // Обновим тип здания и ресурсы
+    building.type = newType;
+    building.resources = newBuildingTemplate.resources;
+    building.constructionCost = newBuildingTemplate.constructionCost;
+    building.upgradedTo = newType;  // Отметим, что здание обновлено
+
+    // Сохраним изменения
+    await building.save();
+
+    res.status(200).send({ message: 'Building upgraded successfully', building });
+  } catch (error) {
+    console.error('Error upgrading building:', error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+
 // Route to remove a building for a player
 router.delete('/:buildingId', async (req, res) => {
   try {
