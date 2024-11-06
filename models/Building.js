@@ -15,4 +15,10 @@ const buildingSchema = new mongoose.Schema({
   upgradedTo: { type: String, default: null },
 });
 
+buildingSchema.index({ owner: 1 });
+buildingSchema.index({ type: 1 });
+buildingSchema.index({ "resources.energy": 1 });
+
+const Building = mongoose.model('Building', buildingSchema);
+
 module.exports = mongoose.model('Building', buildingSchema);
