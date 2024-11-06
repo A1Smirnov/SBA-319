@@ -20,27 +20,31 @@ router.get('/available', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { buildingType } = req.body;
-        const playerId = req.session.playerId; // Инициализация playerId из сессии
+      const playerId = req.session.playerId;
 
-        if (!playerId) {
-            console.error('Player ID not found in session.');
-            return res.status(400).send('Player not logged in.');
-        }
+      if (!playerId) {
+        return res.status(400).send('Player not logged in.');
+      }
 
-        const newBuilding = new Building({ type: buildingType });
-        await newBuilding.save();
+      // Find the player and update their data
+      const player = await Player.findById(playerId);
+      if (!player) {
+        return res.status(404).send('Player not found.');
+      }
 
-        const player = await Player.findById(playerId);
-        if (!player) {
-            return res.status(404).send('Player not found.');
-        }
-        player.buildings.push(newBuilding);
+      // Add building and update player resources
+      const building = await Building.findOne({ type: buildingType });
+      if (building) {
+        player.buildings.push(building._id);
+        player.resources.money -= building.constructionCost.money;
+        player.resources.energy -= building.constructionCost.energy;
         await player.save();
+      }
 
-        res.redirect('/game');
+      res.redirect('/game');
     } catch (error) {
-        console.error('Error building:', error);
-        res.status(500).send('An error occurred while building.');
+      console.error('Error while building:', error);
+      res.status(500).send('An error occurred while building.');
     }
 });
 

@@ -4,7 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-const session = require('express-session');  // Testing sessions
+// Testing sessions
+const session = require('express-session');  
+const bodyParser = require('body-parser');
 
 // Import of Building models
 const Building = require('./models/Building');
@@ -21,6 +23,7 @@ app.set('view engine', 'ejs');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For work with form's data
 app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Import building routes
 app.use('/build', buildingRoutes);
