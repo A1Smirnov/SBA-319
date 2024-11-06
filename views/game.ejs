@@ -43,58 +43,58 @@
   <script>
     const form = document.getElementById('buildForm');
 
-    // Catching form submission
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+      // Catching form submission
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-      const buildingType = document.getElementById('buildingType').value;
-      const playerId = "<%= player._id %>";  // Add playerId from ejs
+    const buildingType = document.getElementById('buildingType').value;
+    const playerId = "<%= player._id %>";  // Add playerId from ejs
+
+    try {
+      // POST-request to create building
+      const response = await axios.post('/build', {
+        buildingType: buildingType,
+        playerId: playerId
+      });
+
+      if (response.status === 200) {
+        alert('Building successfully created!');
+        // Refresh the page
+        location.reload();
+      } else {
+        alert('Failed to build.');
+      }
+    } catch (error) {
+      console.error('Error creating building:', error);
+      alert('An error occurred while creating the building.');
+    }
+  });
+
+  // Handle remove building button click
+  document.querySelectorAll('.remove-building').forEach(button => {
+    button.addEventListener('click', async (event) => {
+      const buildingId = event.target.getAttribute('data-building-id');
+      const playerId = "<%= player._id %>";
 
       try {
-        // POST-request to create building
-        const response = await axios.post('/build', {
-          buildingType: buildingType,
-          playerId: playerId
+        // DELETE-request to remove building
+        const response = await axios.delete(`/build/${buildingId}`, {
+          data: { playerId: playerId }
         });
 
         if (response.status === 200) {
-          alert('Building successfully created!');
+          alert('Building successfully removed!');
           // Refresh the page
           location.reload();
         } else {
-          alert('Failed to build.');
+          alert('Failed to remove building.');
         }
       } catch (error) {
-        console.error('Error creating building:', error);
-        alert('An error occurred while creating the building.');
+        console.error('Error removing building:', error);
+        alert('An error occurred while removing the building.');
       }
     });
-
-    // Handle remove building button click
-    document.querySelectorAll('.remove-building').forEach(button => {
-      button.addEventListener('click', async (event) => {
-        const buildingId = event.target.getAttribute('data-building-id');
-        const playerId = "<%= player._id %>";
-
-        try {
-          // DELETE-request to remove building
-          const response = await axios.delete(`/building/${buildingId}`, {
-            data: { playerId: playerId }
-          });
-
-          if (response.status === 200) {
-            alert('Building successfully removed!');
-            // Refresh the page
-            location.reload();
-          } else {
-            alert('Failed to remove building.');
-          }
-        } catch (error) {
-          console.error('Error removing building:', error);
-          alert('An error occurred while removing the building.');
-        }
-      });
-    });
+  });
   </script>
 </body>
 </html>
