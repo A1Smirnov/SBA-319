@@ -5,31 +5,36 @@ const router = express.Router();
 const Building = require('../models/Building');
 const Player = require('../models/Player');
 
-// Route to create a building and add it to a player
+// Route to create a building for a player
 router.post('/', async (req, res) => {
   try {
-    const { type, resources, constructionCost, playerId } = req.body;
+    const { buildingType, playerId } = req.body;
 
-    // Log request data for debugging
-    console.log("Request body:", req.body);
+    console.log("Received buildingType:", buildingType, "for playerId:", playerId);
 
-    // Validate input data
-    if (!type || !resources || !constructionCost || !playerId) {
-      return res.status(400).send('Missing required building or player data');
+    if (!buildingType || !playerId) {
+      return res.status(400).send('Building type or player ID missing');
     }
 
-    // Create a new building document
+    // Find the building template
+    const buildingTemplate = await Building.findOne({ type: buildingType });
+
+    if (!buildingTemplate) {
+      return res.status(404).send('Building type not found');
+    }
+
+    // Create a new building instance for the player
     const newBuilding = new Building({
-      type,
-      resources,
-      constructionCost,
+      type: buildingTemplate.type,
+      resources: buildingTemplate.resources,
+      constructionCost: buildingTemplate.constructionCost,
       owner: playerId
     });
 
-    // Save the building to the database
+    // Save the new building instance
     const savedBuilding = await newBuilding.save();
 
-    // Find the player and add the building reference to the buildings array
+    // Add the building to the player's buildings
     const player = await Player.findByIdAndUpdate(
       playerId,
       { $push: { buildings: savedBuilding._id } },

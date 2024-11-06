@@ -1,11 +1,9 @@
-<!-- views/game.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game Management</title>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
   <h1>Welcome, <%= player.name %>!</h1>
@@ -26,31 +24,35 @@
     <button type="submit">Build</button>
   </form>
 
+  <!-- Connect axios CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script>
     const form = document.getElementById('buildForm');
 
-    // Event listener to handle form submission
+    // Catching form
     form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+      event.preventDefault(); // PREVENT DEFAULT
 
       const buildingType = document.getElementById('buildingType').value;
+      const playerId = "<%= player._id %>";  // Добавляем playerId из ejs
 
       try {
-        // Send a POST request with the building type data
+        // POST-request with JSON-data
         const response = await axios.post('/build', {
-          buildingType
+          buildingType: buildingType,
+          playerId: playerId  // Добавляем playerId
         });
 
         if (response.status === 200) {
-          alert('Building constructed successfully!');
-          // Reload the page to update the player's resources, if needed
+          alert('Building successfully created!');
+          // Refresh page
           location.reload();
         } else {
-          alert('Failed to construct building');
+          alert('Failed to build.');
         }
       } catch (error) {
-        console.error('Error building the building:', error);
-        alert('There was an error while constructing the building.');
+        console.error('Error creating building:', error);
+        alert('An error occurred while creating the building.');
       }
     });
   </script>
