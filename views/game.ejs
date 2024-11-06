@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game Management</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
   <h1>Welcome, <%= player.name %>!</h1>
@@ -15,14 +16,43 @@
   </ul>
 
   <h2>Buildings:</h2>
-  <form action="/build" method="POST">
+  <form id="buildForm">
     <label for="buildingType">Choose a building:</label>
-    <select name="buildingType">
+    <select id="buildingType" name="buildingType">
       <% availableBuildings.forEach(building => { %>
         <option value="<%= building.type %>"><%= building.type %></option>
       <% }) %>
     </select>
     <button type="submit">Build</button>
   </form>
+
+  <script>
+    const form = document.getElementById('buildForm');
+
+    // Event listener to handle form submission
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const buildingType = document.getElementById('buildingType').value;
+
+      try {
+        // Send a POST request with the building type data
+        const response = await axios.post('/build', {
+          buildingType
+        });
+
+        if (response.status === 200) {
+          alert('Building constructed successfully!');
+          // Reload the page to update the player's resources, if needed
+          location.reload();
+        } else {
+          alert('Failed to construct building');
+        }
+      } catch (error) {
+        console.error('Error building the building:', error);
+        alert('There was an error while constructing the building.');
+      }
+    });
+  </script>
 </body>
 </html>
