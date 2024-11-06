@@ -70,39 +70,59 @@ router.post('/', async (req, res) => {
 });
 
 router.patch('/upgrade/:id', async (req, res) => {
-  const { id } = req.params;
-  const { newType } = req.body;  // Тип нового здания
-
   try {
-    // Найдем здание по ID
+    const { id } = req.params;  // ID здания, которое нужно обновить
+    const { upgradeTo } = req.body;  // Тип здания для апгрейда (например, "zoo" или "greenhouse")
+
+    // Проверяем, передан ли тип апгрейда
+    if (!upgradeTo) {
+      return res.status(400).send('Upgrade type is required');
+    }
+
+    // Находим здание по ID
     const building = await Building.findById(id);
 
+    // Проверяем, найдено ли здание
     if (!building) {
       return res.status(404).send('Building not found');
     }
 
-    // Проверяем, было ли уже обновлено здание
-    if (building.upgradedTo) {
-      return res.status(400).send('Building has already been upgraded');
+    // Логика апгрейда
+    if (building.type === 'plantation' && upgradeTo === 'greenhouse') {
+      // Преобразуем "plantation" в "greenhouse"
+      building.type = 'greenhouse';
+      building.constructionCost = {
+        money: 200,
+        energy: 30
+      };
+      building.resources = {
+        energy: 10,
+        money: 50
+      };
+    } else if (building.type === 'enclosure' && upgradeTo === 'zoo') {
+      // Преобразуем "enclosure" в "zoo"
+      building.type = 'zoo';
+      building.constructionCost = {
+        money: 300,
+        energy: 50
+      };
+      building.resources = {
+        energy: 20,
+        money: 100
+      };
+    } else {
+      // В случае неправильного апгрейда
+      return res.status(400).send('Invalid upgrade');
     }
 
-    // Поищем новое здание по типу, если оно существует
-    const newBuildingTemplate = await Building.findOne({ type: newType });
-
-    if (!newBuildingTemplate) {
-      return res.status(404).send('New building type not found');
-    }
-
-    // Обновим тип здания и ресурсы
-    building.type = newType;
-    building.resources = newBuildingTemplate.resources;
-    building.constructionCost = newBuildingTemplate.constructionCost;
-    building.upgradedTo = newType;  // Отметим, что здание обновлено
-
-    // Сохраним изменения
+    // Сохраняем изменения в базе данных
     await building.save();
 
-    res.status(200).send({ message: 'Building upgraded successfully', building });
+    // Ответ с успешным апгрейдом
+    res.status(200).send({
+      message: 'Building upgraded successfully',
+      building  // Возвращаем обновленные данные здания
+    });
   } catch (error) {
     console.error('Error upgrading building:', error);
     res.status(500).send('Internal server error');

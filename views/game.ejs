@@ -23,8 +23,12 @@
         Construction Cost: <%= building.constructionCost.energy %> Energy, <%= building.constructionCost.money %> Money<br>
         <!-- Remove button -->
         <button class="remove-building" data-building-id="<%= building._id %>">Remove</button>
-        <!-- FOR BUILDING UPGRADE -->
-        <button class="upgrade-building" data-building-id="<%= building._id %>">Upgrade</button>
+              <!-- Upgrade button (only for plantation and enclosure) -->
+      <% if (building.type === 'plantation') { %>
+        <button class="upgrade-building" data-building-id="<%= building._id %>" data-upgrade-to="greenhouse">Upgrade to Greenhouse</button>
+      <% } else if (building.type === 'enclosure') { %>
+        <button class="upgrade-building" data-building-id="<%= building._id %>" data-upgrade-to="zoo">Upgrade to Zoo</button>
+      <% } %>
       </li>
     <% }) %>
 
@@ -35,33 +39,28 @@
 <!-- Сюда добавляем выбор для апгрейда -->
 <script>
   document.querySelectorAll('.upgrade-building').forEach(button => {
-    button.addEventListener('click', async (event) => {
-      const buildingId = event.target.getAttribute('data-building-id');
-      const newBuildingType = prompt("Enter new building type:");  // Запрашиваем новый тип здания
+  button.addEventListener('click', async (event) => {
+    const buildingId = event.target.getAttribute('data-building-id');
+    const upgradeTo = event.target.getAttribute('data-upgrade-to');  // Тип здания для апгрейда
 
-      if (!newBuildingType) {
-        alert('Please enter a valid building type.');
-        return;
+    try {
+      // Отправляем запрос на сервер для апгрейда
+      const response = await axios.patch(`/build/upgrade/${buildingId}`, {
+        upgradeTo: upgradeTo
+      });
+
+      if (response.status === 200) {
+        alert('Building upgraded successfully!');
+        location.reload();  // Перезагружаем страницу для обновления данных
+      } else {
+        alert('Failed to upgrade building.');
       }
-
-      try {
-        // PATCH-запрос на сервер для обновления
-        const response = await axios.patch(`/build/${buildingId}/upgrade`, {
-          newType: newBuildingType
-        });
-
-        if (response.status === 200) {
-          alert('Building successfully upgraded!');
-          location.reload();  // Обновляем страницу
-        } else {
-          alert('Failed to upgrade building.');
-        }
-      } catch (error) {
-        console.error('Error upgrading building:', error);
-        alert('An error occurred while upgrading the building.');
-      }
-    });
+    } catch (error) {
+      console.error('Error upgrading building:', error);
+      alert('An error occurred while upgrading the building.');
+    }
   });
+});
 </script>
 
   <h2>Available Buildings:</h2>
