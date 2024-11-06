@@ -2,8 +2,9 @@
 
 const express = require('express');
 const router = express.Router();
-const Building = require('../models/Building');
+const Building = require('../models/Building');  // Шаблон зданий
 const Player = require('../models/Player');
+const GameState = require('../models/Gamestate'); // Модель для gamestate
 
 // Route to create a building for a player
 router.post('/', async (req, res) => {
@@ -17,38 +18,40 @@ router.post('/', async (req, res) => {
     }
 
     // Find the building template
-    const buildingTemplate = await Building.findOne({ type: buildingType });
+    const buildingTemplate = await Building.findOne({ type: buildingType, owner: null });
 
     if (!buildingTemplate) {
-      return res.status(404).send('Building type not found');
+      return res.status(404).send('Building type not found or already owned');
     }
 
-    // Create a new building instance for the player
-    const newBuilding = new Building({
+    // Create a new building instance for the player in gamestate
+    const newBuilding = new GameState({
       type: buildingTemplate.type,
       resources: buildingTemplate.resources,
       constructionCost: buildingTemplate.constructionCost,
       owner: playerId
     });
 
-    // Save the new building instance
+    // Save the new building in gamestate
     const savedBuilding = await newBuilding.save();
 
-    // Add the building to the player's buildings
-    const player = await Player.findByIdAndUpdate(
-      playerId,
-      { $push: { buildings: savedBuilding._id } },
-      { new: true }
-    );
+    // Find the player and add the building to the player's gamestate
+    const player = await Player.findById(playerId);
 
     if (!player) {
       return res.status(404).send('Player not found');
     }
 
+    // Add the new building to the player's gamestate reference
+    player.buildings.push(savedBuilding._id);
+
+    // Save the updated player object with the new building
+    const updatedPlayer = await player.save();
+
     res.status(200).send({
       message: 'Building created and added to player',
       building: savedBuilding,
-      player
+      player: updatedPlayer
     });
   } catch (error) {
     console.error('Error while building:', error);

@@ -12,7 +12,7 @@ const buildingSchema = new mongoose.Schema({
     money: { type: Number, required: true },
     energy: { type: Number, required: true },
   },
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'Player', default: null } // Задано значение по умолчанию null
 });
 
 module.exports = mongoose.model('Building', buildingSchema);
